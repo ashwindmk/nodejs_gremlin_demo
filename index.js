@@ -57,7 +57,7 @@ async function countSoftwares() {
         if (count && count['value']) {
             console.log('Softwares count: ' + count['value']);
         } else {
-            console.log('Softwares count: 0');
+            console.log('Softwares count result is undefined');
         }
     } catch (err) {
         console.error('Error while counting softwares: ' + err);
@@ -70,7 +70,7 @@ async function countPersons() {
         if (count && count['value']) {
             console.log('Persons count: ' + count['value']);
         } else {
-            console.log('PErsons count result undefined.');
+            console.log('Persons count result is undefined');
         }
     } catch (err) {
         console.error('Error while counting persons: ' + err);
