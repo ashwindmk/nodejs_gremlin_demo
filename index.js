@@ -151,10 +151,19 @@ async function addEdge(person, software) {
         if (v1 && v2) {
             const v1id = v1['value']['id'];
             const v2id = v2['value']['id'];
-            if (v1id && v2id) {
-                const newEdge = await g.V(v1id).addE('created').to(g.V(v2id)).property('weight', 0.4).next();
-                console.log('New edge: ' + JSON.stringify(newEdge));
+            if (v1id != undefined && v2id != undefined) {
+                const exists = await g.V(v1id).outE('created').as('e').inV().hasId(v2id).select('e').next();
+                if (exists && exists['value']) {
+                    console.log('Edge between ' + person + ' and ' + software + ' already exists');
+                } else {
+                    const newEdge = await g.V(v1id).addE('created').to(g.V(v2id)).property('weight', 0.4).next();
+                    console.log('New edge: ' + JSON.stringify(newEdge));
+                }
+            } else {
+                console.error('Error getting vertex IDs');
             }
+        } else {
+            console.error('Vertices not found');
         }
     } catch (err) {
         console.error('Error while adding edge: ' + err);
@@ -182,10 +191,27 @@ async function deleteEdge(person, software) {
     }
 }
 
+async function deleteAllEdges() {
+    try {
+        await g.E().drop().iterate();
+        console.log('Deleted all edges');
+    } catch (err) {
+        console.error('Error while deleting all edges: ' + err);
+    }
+}
+
 // Get list of creators for a software
 async function getCreators(software) {
-    const result = await g.V().has('software', 'name', software).next();
-    console.log(result);
+    try {
+        const results = await g.V().has('software', 'name', software).in_('created').values('name').toList();
+        if (results && results.length > 0) {
+            console.log('Creators who created ' + software + ': ' + JSON.stringify(results));
+        } else {
+            console.log('No results found');
+        }
+    } catch(err) {
+        console.error('Error while getting creators who created ' + software + ': ' + err);
+    }
 }
 
 // Get list of softwares created by person
@@ -223,7 +249,13 @@ countSoftwares();
 
 // deleteAllSoftwares();
 // deleteAllPersons();
+// deleteAllEdges();
 
 // deleteEdge('linus', 'git');
 // deleteEdge('linus', 'linux');
 // deleteEdge('james', 'java');
+
+getSoftwares('linus');
+getSoftwares('james');
+getCreators('linux');
+getCreators('java');
